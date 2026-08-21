@@ -1,0 +1,13 @@
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("Painel Inicializado.");
+    
+    document.getElementById('update-timestamp').textContent = 'Carregando...';
+    document.getElementById('data-source-name').textContent = USE_SIMULATED_DATA ? 'Dados Simulados' : 'Google Sheets';
+    
+    const allData = await dataService.getDashboardData();
+    console.log("Dados carregados:", allData);
+    
+    document.getElementById('update-timestamp').textContent = formatters.formatDateTime(new Date());
+    
+    // Próximo passo: Implementar atualização dos cartões executivos
+});

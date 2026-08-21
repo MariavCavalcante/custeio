@@ -1,0 +1,3 @@
+function createCharts(processedData) {
+    console.log("Função de gráficos pronta para ser implementada (Ex: usando Echarts ou Chart.js)");
+}

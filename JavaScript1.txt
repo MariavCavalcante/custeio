@@ -1,0 +1,13 @@
+const formatters = {
+    formatCurrency: (value) => {
+        const num = parseFloat(value) || 0;
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
+    },
+    formatDateTime: (date) => {
+        if (!(date instanceof Date)) return "Data inválida";
+        return date.toLocaleString('pt-BR', { 
+            year: 'numeric', month: '2-digit', day: '2-digit', 
+            hour: '2-digit', minute: '2-digit' 
+        }).replace(',', ' às');
+    }
+};

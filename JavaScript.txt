@@ -1,9 +1,0 @@
-// --- CONFIGURAÇÃO DA FONTE DE DADOS ---
-// Alterne para 'false' para usar os dados ao vivo do Google Sheets.
-const USE_SIMULATED_DATA = true;
-
-// ID da planilha Google
-const GOOGLE_SHEET_ID = '1_a5uBxC0puDYcVsYeIk6tyHPOq02ditnhn8laX0IqcU';
-
-// Nomes das abas
-const SHEET_NAMES = ['UPA 24h', 'SAMU 192', 'GLOSAS - UPA 24h', 'GLOSAS - SAMU 192'];

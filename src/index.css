@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta institucional — verde SES-GO (#00766f) + azul do céu da bandeira +
+     dourado da coroa/brasão de Goiás, sobre fundo neutro claro. */
+  --color-verde-900: #00302d;
+  --color-verde-800: #004f4b;
+  --color-verde-700: #00655f;
+  --color-verde-600: #00766f;
+  --color-verde-500: #0e9187;
+  --color-verde-100: #e3f2f0;
+  --color-verde-50: #f2f8f7;
+
+  --color-azul-700: #12314f;
+  --color-azul-600: #1b4b7a;
+  --color-azul-500: #3068a0;
+  --color-azul-100: #e6edf5;
+
+  --color-dourado-600: #a8811c;
+  --color-dourado-500: #c9a227;
+  --color-dourado-100: #f7efd6;
+
+  --color-vermelho-600: #b3413a;
+  --color-vermelho-100: #f8e9e7;
+
+  --color-ink: #12201f;
+  --color-ink-soft: #4b5a58;
+  --color-bg: #f6f8f7;
+  --color-paper: #ffffff;
+  --color-line: #dde5e2;
+
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+html {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: var(--color-bg);
+}
+
+body {
+  margin: 0;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+/* trilho de scroll discreto para a tabela */
+.trilho::-webkit-scrollbar {
+  height: 8px;
+}
+.trilho::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 4px;
+}

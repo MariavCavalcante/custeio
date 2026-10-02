@@ -1,0 +1,17 @@
+name: Acionar deploy do Painel no Netlify
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/trigger-netlify.yml"
+permissions:
+  actions: write
+  contents: read
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acionar workflow de deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-netlify.yml --ref main

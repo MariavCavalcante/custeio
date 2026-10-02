@@ -1,0 +1,29 @@
+name: Validar conexão online do Painel
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/test-painel-online.yml"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Testar leitura das planilhas pelo painel
+        run: |
+          set -e
+          curl -fsS "https://painel-monitoramento-custeio-rue.netlify.app/.netlify/functions/sheets-data" -o /tmp/data.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/data.json'))
+          if 'error' in d:
+              raise SystemExit(d['error'])
+          print('SAMU',len(d.get('samu',[])))
+          print('UPA',len(d.get('upa',[])))
+          print('GLOSAS',len(d.get('glosas',[])))
+          print('DEVOLUCOES',len(d.get('devolucoes',[])))
+          print('ATUALIZADO',d.get('generatedAt'))
+          if not d.get('samu') or not d.get('upa'):
+              raise SystemExit('Bases vazias')
+          PY

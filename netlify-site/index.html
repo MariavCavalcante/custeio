@@ -33,7 +33,7 @@ label{display:block;font-size:10px;font-weight:800;color:var(--muted);text-trans
 </main>
 <script>window.DATA={samu:[],upa:[],glosas:[],devolucoes:[],empenhos:[],quality:[],generatedAt:null};</script><script>
 const M={1:"Janeiro",2:"Fevereiro",3:"Março",4:"Abril",5:"Maio",6:"Junho",7:"Julho",8:"Agosto",9:"Setembro",10:"Outubro",11:"Novembro",12:"Dezembro"};
-const D=window.DATA,$=id=>document.getElementById(id),uniq=a=>[...new Set(a.filter(x=>x!==""&&x!=null))],sum=(a,k)=>a.reduce((s,r)=>s+(Number(r[k])||0),0);
+let D=window.DATA;const $=id=>document.getElementById(id),uniq=a=>[...new Set(a.filter(x=>x!==""&&x!=null))],sum=(a,k)=>a.reduce((s,r)=>s+(Number(r[k])||0),0);
 const brl=v=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(v)||0),num=v=>new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0}).format(Number(v)||0),pct=v=>new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(Number(v)||0)+"%";
 function v(id){return $(id)?.value||""} function pop(id,vals,all){const e=$(id),old=e.value;e.innerHTML=`<option value="">${all}</option>`+vals.map(x=>`<option value="${x}">${x}</option>`).join("");if(vals.includes(old))e.value=old}
 function rows(){let a=[...D.samu,...D.upa];return a.filter(r=>(!v("fy")||String(r.year)===v("fy"))&&(!v("fm")||String(r.month)===v("fm"))&&(!v("fc")||r.component===v("fc"))&&(!v("fma")||r.macro===v("fma"))&&(!v("fr")||r.region===v("fr"))&&(!v("fmu")||r.municipality===v("fmu")))}

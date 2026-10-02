@@ -1,6 +1,10 @@
-name: Deploy painel conectado no Netlify
+name: Deploy Netlify
 on:
   workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "netlify-site/**"
 permissions:
   contents: read
 jobs:
@@ -8,15 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compactar site
-        run: |
-          cd netlify-site
-          zip -qr ../site.zip .
-      - name: Enviar ao Netlify
-        run: |
-          set -e
-          RESPONSE=$(curl --fail-with-body -sS -X POST \
-            -H "user-agent: netlify-mcp" \
-            -F "zip=@site.zip;type=application/zip" \
-            "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..lmatRos-xISSDl6a.wO38L_sCKVHoA1eW4yghszwBZ0Aw4mnbWayRME01b07Laa8ABy6e11-tGiX27Eey6QF-H7u7O1tmb3Qpkkcm45FgA7CKJIqwDa5PD1c2mogbY1-bOtjMwbuOOyFvcw5wTpzQObCdpeWIrJ_SxYE4FSx7s0USMuZFJysn_uaOk_NO5ewDUmTgtgVAr7LqqaTQw0tEnTLo11a4r4BEWQiVDC8yN0NrijVSI9fQIioSXqMrCC7-WeNIokn9fzsWRiMjMOkf_tT8ztvQb3x7ePXSKYk77qNowQtuls0FzP-ybZCfTmhHPY_bMyfHmmw6lDgmO5gLg-8rUDsc1btogRh99SsF_mzMtfi0_35MpqvimWEVTKWmLinjxz6Kw8dEDxXbT7AYIdqL.u0mGFOEdN4WsaEwGHk_bWA/api/v1/sites/0730919b-7a05-42b6-8752-7ac3a000ee22/builds")
-          echo "$RESPONSE"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy painel
+        working-directory: netlify-site
+        run: npx -y @netlify/mcp@latest --site-id 0730919b-7a05-42b6-8752-7ac3a000ee22 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Zox4Ffdjhgus-G9l.Qg4bbKP8zr8IG4nWV4kxUhuDgw08g2-AJmt19DbaxZn8U0OSeJfPM0X69pT9JkkXOZATU2Pwi5G4_mwfodRMdMbOBRYGRIsyIAm1QWKtDYIZsPiZR0sw0FKLJTL_p_l32oAURdYHuNZpHu-KhcvKigIjmZqLGMO_w_qmQdpKUqio3qvwcVNe3HkKxPDzs-VhjwxeuXplMnU7SHPrJebNrZzyF5iqHndxdXRbaqfAhYQYU5HpFwTfrICHvz8pl7PWdAiTqJEYrYfvNtZSfGrc7NIrYA_HYRhgOjQT96iKK6R3Rkyz9ml_p3J0iT1TH6aop9xUwmwLhhxwV3SprCmzZ0jAcOrCcSxIW_hAoIPwKGrNSGTQJhe5v0lUi6SLG3AetgQ0lhgL.SncOLDi0qYdftBZhuKehTA"

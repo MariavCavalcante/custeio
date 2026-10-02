@@ -48,7 +48,38 @@ function overview(){const a=rows(),municipios=uniq(a.map(r=>r.municipality)).len
 function metric(r,t,s){let q=0,ms=0;const add=(a,b)=>{q+=+r[a]||0;ms+=+r[b]||0};if(!t||t==="USA"){if(!s||s==="Habilitada")add("usa_hab","usa_hab_ms");if(!s||s==="Qualificada")add("usa_qual","usa_qual_ms")}if(!t||t==="USB"){if(!s||s==="Habilitada")add("usb_hab","usb_hab_ms");if(!s||s==="Qualificada")add("usb_qual","usb_qual_ms")}if(!t||t==="Moto")add("moto","moto_ms");return{q,ms}}
 function samu(){const a=rows().filter(r=>r.component==="SAMU 192"),t=v("st"),s=v("ss"),q=a.reduce((x,r)=>x+metric(r,t,s).q,0),ms=a.reduce((x,r)=>x+metric(r,t,s).ms,0);$("scards").innerHTML=[card("Unidades selecionadas",num(q),"Quantidade"),card("Valor Pago MS",brl(ms),"Tipo/situação","green"),card("Valor Pago SES/GO",brl(sum(a,"ses")),"Líquido"),card("Glosas Abatidas (-)",brl(sum(a,"glosa_abatida")),"SAMU 192","red")].join("");share("stypes",[["USA",a.reduce((x,r)=>x+metric(r,"USA",s).q,0)],["USB",a.reduce((x,r)=>x+metric(r,"USB",s).q,0)],["Moto",a.reduce((x,r)=>x+metric(r,"Moto",s).q,0)]],"number");const mm=new Map();a.forEach(r=>{const x=metric(r,t,s).ms;if(x)mm.set(r.macro,(mm.get(r.macro)||0)+x)});bars("smacro",[...mm]);trend("strend",a,"ms");share("central",[["Habilitada",sum(a,"central_hab_ms")],["Qualificada",sum(a,"central_qual_ms")]])}
 function upa(){const a=rows().filter(r=>r.component==="UPA 24h"),s=v("us"),b=a.filter(r=>!s||r.status===s);$("ucards").innerHTML=[card("UPAs no recorte",num(uniq(b.map(r=>r.cnes||r.unit)).length),"Unidades"),card("Valor Pago SES/GO",brl(sum(b,"ses")),"Líquido"),card("Valor Pago MS",brl(sum(b,"ms")),"Líquido","green"),card("Glosas Abatidas (-)",brl(sum(b,"glosa_abatida")),"UPA 24h","red")].join("");share("ustatus",[["Habilitada",uniq(a.filter(r=>r.status==="HABILITADA").map(r=>r.cnes||r.unit)).length],["Qualificada",uniq(a.filter(r=>r.status==="QUALIFICADA").map(r=>r.cnes||r.unit)).length]],"number");bars("umacro",group(b,"macro"));trend("utrend",b)}
-function gd(){const a=rows(),gl=a.filter(r=>+(r.glosa_abatida||r.glosa||0)>0),dv=a.filter(r=>+r.devolucao>0);const gs=gl.filter(r=>r.component==="SAMU 192"),gu=gl.filter(r=>r.component==="UPA 24h");$("gcards").innerHTML=[card("Glosas SAMU 192",brl(gs.reduce((s,r)=>s+(+r.glosa_abatida||+r.glosa||0),0)),"Abatidas","red"),card("Glosas UPA 24h",brl(gu.reduce((s,r)=>s+(+r.glosa_abatida||+r.glosa||0),0)),"Abatidas","red"),card("Devoluções",brl(sum(dv,"devolucao")),"Valor devolvido","yellow")].join("");const sm=new Map();gs.forEach(r=>sm.set(r.municipality,(sm.get(r.municipality)||0)+(+r.glosa_abatida||+r.glosa||0)));const um=new Map();gu.forEach(r=>{const k=r.unit?`${r.unit} — ${r.municipality}`:r.municipality;um.set(k,(um.get(k)||0)+(+r.glosa_abatida||+r.glosa||0)});bars("gsamu",[...sm]);bars("gupa",[...um]);const dm=new Map();dv.forEach(r=>{const k=r.unit?`${r.unit} — ${r.municipality}`:r.municipality;dm.set(k,(dm.get(k)||0)+(+r.devolucao||0)});bars("dloc",[...dm])}
+function gd(){
+  const a=rows();
+  const gl=a.filter(r=>Number(r.glosa_abatida||r.glosa||0)>0);
+  const dv=a.filter(r=>Number(r.devolucao||0)>0);
+  const gs=gl.filter(r=>r.component==="SAMU 192");
+  const gu=gl.filter(r=>r.component==="UPA 24h");
+
+  $("gcards").innerHTML=[
+    card("Glosas SAMU 192",brl(gs.reduce((s,r)=>s+Number(r.glosa_abatida||r.glosa||0),0)),"Abatidas","red"),
+    card("Glosas UPA 24h",brl(gu.reduce((s,r)=>s+Number(r.glosa_abatida||r.glosa||0),0)),"Abatidas","red"),
+    card("Devoluções",brl(sum(dv,"devolucao")),"Valor devolvido","yellow")
+  ].join("");
+
+  const sm=new Map();
+  gs.forEach(r=>sm.set(r.municipality,(sm.get(r.municipality)||0)+Number(r.glosa_abatida||r.glosa||0)));
+
+  const um=new Map();
+  gu.forEach(r=>{
+    const k=r.unit?`${r.unit} — ${r.municipality}`:r.municipality;
+    um.set(k,(um.get(k)||0)+Number(r.glosa_abatida||r.glosa||0));
+  });
+
+  bars("gsamu",[...sm]);
+  bars("gupa",[...um]);
+
+  const dm=new Map();
+  dv.forEach(r=>{
+    const k=r.unit?`${r.unit} — ${r.municipality}`:r.municipality;
+    dm.set(k,(dm.get(k)||0)+Number(r.devolucao||0));
+  });
+  bars("dloc",[...dm]);
+}
 function emp(){const y=v("fy"),e=D.empenhos.filter(x=>!y||String(x.year)===y),a=[...D.samu,...D.upa].filter(r=>!y||String(r.year)===y);$("emp").innerHTML=e.map(x=>{const p=sum(a.filter(r=>r.component===x.component),"ses"),ex=x.value?p/x.value*100:0;return `<div class="panel"><h3>${x.component} — ${x.year}</h3><div class="pills"><span class="pill">Empenhado: ${brl(x.value)}</span><span class="pill">Pago SES/GO: ${brl(p)}</span><span class="pill">Saldo: ${brl(x.value-p)}</span><span class="pill">Execução: ${pct(ex)}</span></div><div class="progress"><span style="width:${Math.min(100,Math.max(0,ex))}%"></span></div></div>`}).join("")||'<div class="desc">Sem dados.</div>'}
 function qual(){const m=new Map();D.quality.forEach(x=>m.set(x.type,(m.get(x.type)||0)+1));$("quality").innerHTML=[...m].map(([k,n])=>`<div class="q"><strong>${num(n)}</strong><span>${k}</span></div>`).join("")}
 function render(){overview();samu();upa();gd();emp();qual()}

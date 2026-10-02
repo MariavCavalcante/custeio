@@ -15,6 +15,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Validar JavaScript da página
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('netlify-site/index.html','utf8');
+          const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+          if(!scripts.length) throw new Error('Nenhum script encontrado no painel');
+          scripts.forEach((s,i)=>{ try { new Function(s); } catch(e) { throw new Error('Erro de sintaxe no script '+(i+1)+': '+e.message); } });
+          console.log('JavaScript válido: '+scripts.length+' blocos');
+          NODE
       - name: Deploy painel
         working-directory: netlify-site
         run: npx -y @netlify/mcp@latest --site-id 0730919b-7a05-42b6-8752-7ac3a000ee22 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Zox4Ffdjhgus-G9l.Qg4bbKP8zr8IG4nWV4kxUhuDgw08g2-AJmt19DbaxZn8U0OSeJfPM0X69pT9JkkXOZATU2Pwi5G4_mwfodRMdMbOBRYGRIsyIAm1QWKtDYIZsPiZR0sw0FKLJTL_p_l32oAURdYHuNZpHu-KhcvKigIjmZqLGMO_w_qmQdpKUqio3qvwcVNe3HkKxPDzs-VhjwxeuXplMnU7SHPrJebNrZzyF5iqHndxdXRbaqfAhYQYU5HpFwTfrICHvz8pl7PWdAiTqJEYrYfvNtZSfGrc7NIrYA_HYRhgOjQT96iKK6R3Rkyz9ml_p3J0iT1TH6aop9xUwmwLhhxwV3SprCmzZ0jAcOrCcSxIW_hAoIPwKGrNSGTQJhe5v0lUi6SLG3AetgQ0lhgL.SncOLDi0qYdftBZhuKehTA"

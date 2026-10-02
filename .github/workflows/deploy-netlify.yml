@@ -28,6 +28,30 @@ jobs:
       - name: Deploy painel
         working-directory: netlify-site
         run: npx -y @netlify/mcp@latest --site-id 0730919b-7a05-42b6-8752-7ac3a000ee22 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Zox4Ffdjhgus-G9l.Qg4bbKP8zr8IG4nWV4kxUhuDgw08g2-AJmt19DbaxZn8U0OSeJfPM0X69pT9JkkXOZATU2Pwi5G4_mwfodRMdMbOBRYGRIsyIAm1QWKtDYIZsPiZR0sw0FKLJTL_p_l32oAURdYHuNZpHu-KhcvKigIjmZqLGMO_w_qmQdpKUqio3qvwcVNe3HkKxPDzs-VhjwxeuXplMnU7SHPrJebNrZzyF5iqHndxdXRbaqfAhYQYU5HpFwTfrICHvz8pl7PWdAiTqJEYrYfvNtZSfGrc7NIrYA_HYRhgOjQT96iKK6R3Rkyz9ml_p3J0iT1TH6aop9xUwmwLhhxwV3SprCmzZ0jAcOrCcSxIW_hAoIPwKGrNSGTQJhe5v0lUi6SLG3AetgQ0lhgL.SncOLDi0qYdftBZhuKehTA"
+      - name: Validar painel no navegador
+        run: |
+          npm install playwright@latest --no-save
+          npx playwright install chromium
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push('PAGEERROR: '+e.message));
+            page.on('console',m=>{ if(m.type()==='error') errors.push('CONSOLE: '+m.text()); });
+            await page.goto('https://painel-monitoramento-custeio-rue.netlify.app/?browser-test='+Date.now(),{waitUntil:'networkidle',timeout:120000});
+            await page.waitForTimeout(7000);
+            const status=await page.locator('#onlineStatus').textContent();
+            const cards=await page.locator('#ocards').innerText();
+            console.log('STATUS='+status);
+            console.log('CARDS='+cards.replace(/\n/g,' | '));
+            if(errors.length) console.log(errors.join('\n'));
+            if(!status || !status.startsWith('Dados online')) throw new Error('Painel não confirmou conexão online: '+status);
+            if(/R\$\s*0,00/.test(cards) && !/[1-9]/.test(cards.replace(/R\$\s*0,00/g,''))) throw new Error('Cards permaneceram zerados');
+            await browser.close();
+          })();
+          NODE
       - name: Validar conexão com as planilhas
         run: |
           set -e

@@ -1,0 +1,22 @@
+name: Deploy painel conectado no Netlify
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compactar site
+        run: |
+          cd netlify-site
+          zip -qr ../site.zip .
+      - name: Enviar ao Netlify
+        run: |
+          set -e
+          RESPONSE=$(curl --fail-with-body -sS -X POST \
+            -H "user-agent: netlify-mcp" \
+            -F "zip=@site.zip;type=application/zip" \
+            "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..lmatRos-xISSDl6a.wO38L_sCKVHoA1eW4yghszwBZ0Aw4mnbWayRME01b07Laa8ABy6e11-tGiX27Eey6QF-H7u7O1tmb3Qpkkcm45FgA7CKJIqwDa5PD1c2mogbY1-bOtjMwbuOOyFvcw5wTpzQObCdpeWIrJ_SxYE4FSx7s0USMuZFJysn_uaOk_NO5ewDUmTgtgVAr7LqqaTQw0tEnTLo11a4r4BEWQiVDC8yN0NrijVSI9fQIioSXqMrCC7-WeNIokn9fzsWRiMjMOkf_tT8ztvQb3x7ePXSKYk77qNowQtuls0FzP-ybZCfTmhHPY_bMyfHmmw6lDgmO5gLg-8rUDsc1btogRh99SsF_mzMtfi0_35MpqvimWEVTKWmLinjxz6Kw8dEDxXbT7AYIdqL.u0mGFOEdN4WsaEwGHk_bWA/api/v1/sites/0730919b-7a05-42b6-8752-7ac3a000ee22/builds")
+          echo "$RESPONSE"

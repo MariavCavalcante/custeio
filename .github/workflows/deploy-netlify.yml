@@ -18,3 +18,21 @@ jobs:
       - name: Deploy painel
         working-directory: netlify-site
         run: npx -y @netlify/mcp@latest --site-id 0730919b-7a05-42b6-8752-7ac3a000ee22 --proxy-path "https://netlify-mcp.netlify.app/proxy/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..Zox4Ffdjhgus-G9l.Qg4bbKP8zr8IG4nWV4kxUhuDgw08g2-AJmt19DbaxZn8U0OSeJfPM0X69pT9JkkXOZATU2Pwi5G4_mwfodRMdMbOBRYGRIsyIAm1QWKtDYIZsPiZR0sw0FKLJTL_p_l32oAURdYHuNZpHu-KhcvKigIjmZqLGMO_w_qmQdpKUqio3qvwcVNe3HkKxPDzs-VhjwxeuXplMnU7SHPrJebNrZzyF5iqHndxdXRbaqfAhYQYU5HpFwTfrICHvz8pl7PWdAiTqJEYrYfvNtZSfGrc7NIrYA_HYRhgOjQT96iKK6R3Rkyz9ml_p3J0iT1TH6aop9xUwmwLhhxwV3SprCmzZ0jAcOrCcSxIW_hAoIPwKGrNSGTQJhe5v0lUi6SLG3AetgQ0lhgL.SncOLDi0qYdftBZhuKehTA"
+      - name: Validar conexão com as planilhas
+        run: |
+          set -e
+          for i in {1..10}; do
+            if curl -fSs "https://painel-monitoramento-custeio-rue.netlify.app/.netlify/functions/sheets-data?ts=$(date +%s)" -o /tmp/data.json; then
+              break
+            fi
+            sleep 5
+          done
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/data.json','utf8'));
+          if(!Array.isArray(d.samu) || !Array.isArray(d.upa)) throw new Error('Resposta sem arrays SAMU/UPA');
+          if(d.samu.length===0 || d.upa.length===0) throw new Error('Conexão retornou zero registros');
+          console.log('SAMU='+d.samu.length);
+          console.log('UPA='+d.upa.length);
+          console.log('Atualizado='+d.generatedAt);
+          NODE

@@ -78,7 +78,7 @@ export async function handler(){
       row.ms=Number(row.ms_bruto||0)-gm;
       row.complemento=Number(row.complemento||0);
       row.devolucao=Number(row.devolucao||0);
-      row.total=row.ses+row.ms+row.complemento+row.devolucao;
+      row.total=row.ses+row.ms+row.complemento-row.devolucao;
     }
 
     return {statusCode:200,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate","access-control-allow-origin":"*"},body:JSON.stringify({generatedAt:new Date().toISOString(),samu,upa,glosas,devolucoes,empenhos,quality})};

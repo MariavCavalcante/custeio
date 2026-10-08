@@ -42,8 +42,8 @@ export async function handler(){
           const msCol=money(get(row,ix,"Valor Mensal do MS"));
           const msFallback=["Central (habitada) - MS","Central (habilitada) - MS","Central (qualificada) - MS","USA (habilitada) - MS","USA (qualificada) - MS","USB (habilitada) - MS","USB (qualificada) - MS","Moto - MS"].reduce((a,n)=>a+money(get(row,ix,n)),0);
           const ms=msCol || msFallback;
-          const ses=cents(ms/2);
-          samu.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"SAMU 192",municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),usa_hab:num(get(row,ix,"USA (habilitada)")),usa_qual:num(get(row,ix,"USA (qualificada)")),usb_hab:num(get(row,ix,"USB (habilitada)")),usb_qual:num(get(row,ix,"USB (qualificada)")),moto:num(get(row,ix,"Moto")),central_hab_ms:money(get(row,ix,"Central (habitada) - MS","Central (habilitada) - MS")),central_qual_ms:money(get(row,ix,"Central (qualificada) - MS")),usa_hab_ms:money(get(row,ix,"USA (habilitada) - MS")),usa_qual_ms:money(get(row,ix,"USA (qualificada) - MS")),usb_hab_ms:money(get(row,ix,"USB (habilitada) - MS")),usb_qual_ms:money(get(row,ix,"USB (qualificada) - MS")),moto_ms:money(get(row,ix,"Moto - MS")),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções")),complemento:money(get(row,ix,"Complemento")),source_sheet:sh});
+          const ses=money(get(row,ix,"Valor Mensal da SES"));
+          samu.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"SAMU 192",municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),usa_hab:num(get(row,ix,"USA (habilitada)")),usa_qual:num(get(row,ix,"USA (qualificada)")),usb_hab:num(get(row,ix,"USB (habilitada)")),usb_qual:num(get(row,ix,"USB (qualificada)")),moto:num(get(row,ix,"Moto")),central_hab_ms:money(get(row,ix,"Central (habitada) - MS","Central (habilitada) - MS")),central_qual_ms:money(get(row,ix,"Central (qualificada) - MS")),usa_hab_ms:money(get(row,ix,"USA (habilitada) - MS")),usa_qual_ms:money(get(row,ix,"USA (qualificada) - MS")),usb_hab_ms:money(get(row,ix,"USB (habilitada) - MS")),usb_qual_ms:money(get(row,ix,"USB (qualificada) - MS")),moto_ms:money(get(row,ix,"Moto - MS")),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções dos Municípios","Devoluções")),complemento:money(get(row,ix,"Complemento")),source_sheet:sh});
         }
       }else if(/^Empenho\s+\d{4}$/i.test(sh)){
         const vv=matrix(sw,sh),y=Number((sh.match(/\d{4}/)||[])[0]),row=vv[3]||[];
@@ -64,8 +64,8 @@ export async function handler(){
       for(let r=1;r<vv.length;r++){
         const row=vv[r]||[],mr=get(row,ix,"Município");if(!mr)continue;
         const mf=get(row,ix,"Mês");if(mf&&norm(mf)!==norm(MONTH_NAMES[p.month]))quality.push({type:"Divergência de período",source:"UPA 24h",sheet:sh});
-        const ms=money(get(row,ix,"Valor Mensal - MS")),ses=cents(ms/2);let c=get(row,ix,"CNES");c=c?String(Math.trunc(Number(c)||0)).padStart(7,"0"):"";
-        upa.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"UPA 24h",unit:String(get(row,ix,"UPA 24h")||"").trim(),municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),cnes:c,status:String(get(row,ix,"Descrição")||"").trim().toUpperCase(),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções")),complemento:0,source_sheet:sh});
+        const ms=money(get(row,ix,"Valor Mensal - MS")),ses=money(get(row,ix,"Valor Mensal - SES/GO"));let c=get(row,ix,"CNES");c=c?String(Math.trunc(Number(c)||0)).padStart(7,"0"):"";
+        upa.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"UPA 24h",unit:String(get(row,ix,"UPA 24h")||"").trim(),municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),cnes:c,status:String(get(row,ix,"Descrição")||"").trim().toUpperCase(),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções dos Municípios","Devoluções")),complemento:0,source_sheet:sh});
       }
     }
 

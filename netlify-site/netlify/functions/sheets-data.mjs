@@ -74,12 +74,13 @@ export async function handler(){
       const mensal=Number(row.glosa)||0,aux=matches.reduce((a,g)=>a+Number(g.value||0),0),abatida=mensal>0?mensal:aux;
       const fontes=matches.map(g=>norm(g.source));let gs=0,gm=0;
       if(abatida>0&&fontes.some(f=>f==="MS"||f.includes("MINISTERIO"))&&!fontes.some(f=>f.includes("SES")))gm=abatida;else gs=abatida;
-      row.glosa_abatida=abatida;
-      row.ses=cents(row.ses_bruto||0);
+      row.glosa_abatida=cents(abatida);
       row.ms=cents(row.ms_bruto||0);
+      row.ses_base=cents(row.ses_bruto||0);
       row.complemento=cents(row.complemento||0);
       row.devolucao=cents(row.devolucao||0);
-      row.total=cents(row.ses+row.ms+row.complemento-row.glosa_abatida-row.devolucao);
+      row.ses=cents(row.ses_base+row.complemento-row.glosa_abatida-row.devolucao);
+      row.total=cents(row.ms+row.ses);
     }
 
     return {statusCode:200,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate","access-control-allow-origin":"*"},body:JSON.stringify({generatedAt:new Date().toISOString(),samu,upa,glosas,devolucoes,empenhos,quality})};

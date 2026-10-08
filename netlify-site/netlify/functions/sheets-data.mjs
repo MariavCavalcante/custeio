@@ -10,6 +10,7 @@ const aliases={"AP GOIANIA":"Aparecida de Goiânia","APARECIDA DE GOIANIA":"Apar
 function muni(v){const k=norm(v);if(aliases[k])return aliases[k];return String(v??"").trim().toLowerCase().split(/\s+/).map(p=>["de","da","do","das","dos","e"].includes(p)?p:p.charAt(0).toUpperCase()+p.slice(1)).join(" ")}
 function money(v){if(v===null||v===undefined||v==="")return 0;if(typeof v==="number")return v;let s=String(v).replace("R$","").replace(/\s/g,"");if(s.includes(",")&&s.includes(".")){if(s.lastIndexOf(",")>s.lastIndexOf("."))s=s.replace(/\./g,"").replace(",",".");else s=s.replace(/,/g,"")}else if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");const n=Number(s);return Number.isFinite(n)?n:0}
 function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+function cents(v){return Math.round((Number(v)||0)*100)/100}
 function period(name){const m=String(name).trim().toUpperCase().match(/^(JANEIRO|FEVEREIRO|MARÇO|MARCO|ABRIL|MAIO|JUNHO|JULHO|AGOSTO|SETEMBRO|OUTUBRO|NOVEMBRO|DEZEMBRO)\s+(\d{4})$/);return m?{year:+m[2],month:MONTHS[m[1]]}:null}
 function idx(headers){const h={};headers.forEach((v,i)=>{if(String(v??"").trim())h[norm(v)]=i});return (...names)=>{for(const n of names){if(h[norm(n)]!==undefined)return h[norm(n)]}return null}}
 function get(row,ix,...names){const i=ix(...names);return i===null?null:row[i]}
@@ -41,7 +42,7 @@ export async function handler(){
           const msCol=money(get(row,ix,"Valor Mensal do MS"));
           const msFallback=["Central (habitada) - MS","Central (habilitada) - MS","Central (qualificada) - MS","USA (habilitada) - MS","USA (qualificada) - MS","USB (habilitada) - MS","USB (qualificada) - MS","Moto - MS"].reduce((a,n)=>a+money(get(row,ix,n)),0);
           const ms=msCol || msFallback;
-          const ses=ms/2;
+          const ses=cents(ms/2);
           samu.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"SAMU 192",municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),usa_hab:num(get(row,ix,"USA (habilitada)")),usa_qual:num(get(row,ix,"USA (qualificada)")),usb_hab:num(get(row,ix,"USB (habilitada)")),usb_qual:num(get(row,ix,"USB (qualificada)")),moto:num(get(row,ix,"Moto")),central_hab_ms:money(get(row,ix,"Central (habitada) - MS","Central (habilitada) - MS")),central_qual_ms:money(get(row,ix,"Central (qualificada) - MS")),usa_hab_ms:money(get(row,ix,"USA (habilitada) - MS")),usa_qual_ms:money(get(row,ix,"USA (qualificada) - MS")),usb_hab_ms:money(get(row,ix,"USB (habilitada) - MS")),usb_qual_ms:money(get(row,ix,"USB (qualificada) - MS")),moto_ms:money(get(row,ix,"Moto - MS")),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções")),complemento:money(get(row,ix,"Complemento")),source_sheet:sh});
         }
       }else if(/^Empenho\s+\d{4}$/i.test(sh)){
@@ -63,7 +64,7 @@ export async function handler(){
       for(let r=1;r<vv.length;r++){
         const row=vv[r]||[],mr=get(row,ix,"Município");if(!mr)continue;
         const mf=get(row,ix,"Mês");if(mf&&norm(mf)!==norm(MONTH_NAMES[p.month]))quality.push({type:"Divergência de período",source:"UPA 24h",sheet:sh});
-        const ms=money(get(row,ix,"Valor Mensal - MS")),ses=ms/2;let c=get(row,ix,"CNES");c=c?String(Math.trunc(Number(c)||0)).padStart(7,"0"):"";
+        const ms=money(get(row,ix,"Valor Mensal - MS")),ses=cents(ms/2);let c=get(row,ix,"CNES");c=c?String(Math.trunc(Number(c)||0)).padStart(7,"0"):"";
         upa.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"UPA 24h",unit:String(get(row,ix,"UPA 24h")||"").trim(),municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),cnes:c,status:String(get(row,ix,"Descrição")||"").trim().toUpperCase(),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções")),complemento:0,source_sheet:sh});
       }
     }
@@ -74,11 +75,11 @@ export async function handler(){
       const fontes=matches.map(g=>norm(g.source));let gs=0,gm=0;
       if(abatida>0&&fontes.some(f=>f==="MS"||f.includes("MINISTERIO"))&&!fontes.some(f=>f.includes("SES")))gm=abatida;else gs=abatida;
       row.glosa_abatida=abatida;
-      row.ses=Number(row.ses_bruto||0)-gs;
-      row.ms=Number(row.ms_bruto||0)-gm;
-      row.complemento=Number(row.complemento||0);
-      row.devolucao=Number(row.devolucao||0);
-      row.total=row.ses+row.ms+row.complemento-row.devolucao;
+      row.ses=cents(row.ses_bruto||0);
+      row.ms=cents(row.ms_bruto||0);
+      row.complemento=cents(row.complemento||0);
+      row.devolucao=cents(row.devolucao||0);
+      row.total=cents(row.ses+row.ms+row.complemento-row.glosa_abatida-row.devolucao);
     }
 
     return {statusCode:200,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate","access-control-allow-origin":"*"},body:JSON.stringify({generatedAt:new Date().toISOString(),samu,upa,glosas,devolucoes,empenhos,quality})};

@@ -89,7 +89,7 @@ async function loadOnline(){
   if(st) st.textContent="Conectando às planilhas…";
   if(bt) bt.disabled=true;
   try{
-    const resp=await fetch("/.netlify/functions/sheets-data?ts="+Date.now(),{cache:"no-store"});
+    const resp=await fetch("/api/sheets-data?ts="+Date.now(),{cache:"no-store"});
     const json=await resp.json();
     if(!resp.ok) throw new Error(json.error||("HTTP "+resp.status));
     if(!Array.isArray(json.samu)||!Array.isArray(json.upa)) throw new Error("Resposta inválida");

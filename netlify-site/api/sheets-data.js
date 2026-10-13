@@ -79,7 +79,7 @@ export default async function handler(req,res){
       row.ses_base=cents(row.ses_bruto||0);
       row.complemento=cents(row.complemento||0);
       row.devolucao=cents(row.devolucao||0);
-      row.ses=cents(row.ses_base+row.complemento-row.glosa_abatida-row.devolucao);
+      row.ses=cents(row.ses_base+row.complemento-row.devolucao);
       row.total=cents(row.ms+row.ses);
     }
 

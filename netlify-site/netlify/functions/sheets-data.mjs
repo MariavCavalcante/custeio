@@ -30,7 +30,7 @@ function matrix(wb,name){const ws=wb.Sheets[name];return ws?XLSX.utils.sheet_to_
 export async function handler(){
   try{
     const [sw,uw]=await Promise.all([workbook(SAMU_ID),workbook(UPA_ID)]);
-    const samu=[],upa=[],glosas=[],devolucoes=[],empenhos=[],quality=[];
+    const samu=[],upa=[],glosas=[],devolucoes=[],empenhos=[],quality=[],monthlyTotals=[];
 
     for(const sh of sw.SheetNames){
       const p=period(sh);
@@ -44,6 +44,31 @@ export async function handler(){
           const ms=msCol || msFallback;
           const ses=money(get(row,ix,"Valor Mensal da SES"));
           samu.push({year:p.year,month:p.month,competence:`${p.year}-${String(p.month).padStart(2,"0")}`,component:"SAMU 192",municipality:muni(mr),macro:titleCase(get(row,ix,"Macrorregião")),region:titleCase(get(row,ix,"Região")),usa_hab:num(get(row,ix,"USA (habilitada)")),usa_qual:num(get(row,ix,"USA (qualificada)")),usb_hab:num(get(row,ix,"USB (habilitada)")),usb_qual:num(get(row,ix,"USB (qualificada)")),moto:num(get(row,ix,"Moto")),central_hab_ms:money(get(row,ix,"Central (habitada) - MS","Central (habilitada) - MS")),central_qual_ms:money(get(row,ix,"Central (qualificada) - MS")),usa_hab_ms:money(get(row,ix,"USA (habilitada) - MS")),usa_qual_ms:money(get(row,ix,"USA (qualificada) - MS")),usb_hab_ms:money(get(row,ix,"USB (habilitada) - MS")),usb_qual_ms:money(get(row,ix,"USB (qualificada) - MS")),moto_ms:money(get(row,ix,"Moto - MS")),ses_bruto:ses,ms_bruto:ms,glosa:money(get(row,ix,"Glosa")),devolucao:money(get(row,ix,"Devoluções dos Municípios","Devoluções")),complemento:money(get(row,ix,"Complemento")),source_sheet:sh});
+        }
+
+        // Totais consolidados já calculados na própria aba mensal.
+        // Usa a última linha sem município que contenha valores nos campos financeiros.
+        let totalRow=null;
+        for(let tr=2;tr<vv.length;tr++){
+          const rr=vv[tr]||[];
+          const hasMunicipio=Boolean(get(rr,ix,"Município"));
+          const sesT=money(get(rr,ix,"Valor Mensal da SES"));
+          const glT=money(get(rr,ix,"Glosa"));
+          const compT=money(get(rr,ix,"Complemento"));
+          const devT=money(get(rr,ix,"Devoluções dos Municípios","Devoluções"));
+          if(!hasMunicipio && (sesT||glT||compT||devT)){
+            totalRow={ses_base:sesT,glosa:glT,complemento:compT,devolucao:devT,row:tr+1};
+          }
+        }
+        if(totalRow){
+          monthlyTotals.push({
+            year:p.year,month:p.month,component:"SAMU 192",sheet:sh,
+            ses_base:cents(totalRow.ses_base),
+            glosa:cents(totalRow.glosa),
+            complemento:cents(totalRow.complemento),
+            devolucao:cents(totalRow.devolucao),
+            source_row:totalRow.row
+          });
         }
       }else if(/^Empenho\s+\d{4}$/i.test(sh)){
         const vv=matrix(sw,sh),y=Number((sh.match(/\d{4}/)||[])[0]),row=vv[3]||[];
@@ -83,7 +108,7 @@ export async function handler(){
       row.total=cents(row.ms+row.ses);
     }
 
-    return {statusCode:200,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate","access-control-allow-origin":"*"},body:JSON.stringify({generatedAt:new Date().toISOString(),samu,upa,glosas,devolucoes,empenhos,quality})};
+    return {statusCode:200,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store, no-cache, must-revalidate","access-control-allow-origin":"*"},body:JSON.stringify({generatedAt:new Date().toISOString(),samu,upa,glosas,devolucoes,empenhos,quality,monthlyTotals})};
   }catch(e){
     return {statusCode:500,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store"},body:JSON.stringify({error:e.message})};
   }
